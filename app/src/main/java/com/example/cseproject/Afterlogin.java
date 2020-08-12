@@ -39,8 +39,32 @@ public class Afterlogin extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         mAuth=FirebaseAuth.getInstance();
         setContentView(R.layout.activity_afterlogin);
+        Button  uploadBtn=findViewById(R.id.upload);
+        CaptureImageButton=findViewById(R.id.capture);
 
 
+        mtextView=findViewById(R.id.text);
+        //capture Option
+        CaptureImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dispatchTakePictureIntent();
+
+            }
+        });
+
+        //upload optionm
+
+        uploadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent =new Intent();
+                intent.setAction(Intent.ACTION_PICK);
+                intent.setType("image/*");
+                startActivityForResult(intent,100);
+
+            }
+        });
 
     }
     //sign Out
@@ -50,14 +74,89 @@ public class Afterlogin extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.manu_layout,menu);
         return super.onCreateOptionsMenu(menu);
     }
+
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.signOutMenuId) {
+        if(item.getItemId()==R.id.signOutMenuId){
             FirebaseAuth.getInstance().signOut();
             finish();
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            Intent intent =new Intent(getApplicationContext(),MainActivity.class);
             startActivity(intent);
         }
-        return super.onOptionsItemSelected(item);
 
-    }}
+        return super.onOptionsItemSelected(item);
+    }
+    //Camera Related Code
+
+    private void dispatchTakePictureIntent() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(intent,101);
+
+        }
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        try{
+            if(requestCode==101 && resultCode==RESULT_OK){
+                //mtextView.setText("I am here right now frans");
+                Bundle extras=data.getExtras();
+                Bitmap imageBitmap=(Bitmap) extras.get("data");
+                FirebaseVisionImage image= FirebaseVisionImage.fromBitmap(imageBitmap);
+                FirebaseVisionTextRecognizer recognizer=FirebaseVision.getInstance().getOnDeviceTextRecognizer();
+
+                recognizer.processImage(image).addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
+                    @Override
+                    public void onSuccess(FirebaseVisionText firebaseVisionText) {
+                        mtextView.setText("");
+
+                        String text=firebaseVisionText.getText() ;
+                        mtextView.append(text);
+                        /*if (text.isEmpty()){
+                            mtextView.append("No text found");
+                        }
+
+                        else{
+
+                            for (FirebaseVisionText.TextBlock block : firebaseVisionText.getTextBlocks()) {
+                                mtextView.append("\n \n" + block.getText());
+                            }
+                        }*/
+                    }
+                });
+
+            }
+            else if(requestCode==100 && resultCode==RESULT_OK) {
+                {
+                    FirebaseVisionImage image = FirebaseVisionImage.fromFilePath(Afterlogin.this, data.getData());
+                    FirebaseVisionTextRecognizer recognizer = FirebaseVision.getInstance().getOnDeviceTextRecognizer();
+                    mtextView.append("hi i am here");
+                    recognizer.processImage(image).addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
+                        @Override
+                        public void onSuccess(FirebaseVisionText firebaseVisionText) {
+                            String text = firebaseVisionText.getText();
+                            mtextView.setText("");
+                            if (text.isEmpty()) {
+                                mtextView.append("No text found");
+                            } else {
+
+                                for (FirebaseVisionText.TextBlock block : firebaseVisionText.getTextBlocks()) {
+
+                                    mtextView.append("\n \n" + block.getText());
+
+                                }
+                            }
+                        }
+                    });
+
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
