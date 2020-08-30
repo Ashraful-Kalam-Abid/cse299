@@ -40,6 +40,7 @@ public class Afterlogin extends AppCompatActivity {
         mAuth=FirebaseAuth.getInstance();
         setContentView(R.layout.activity_afterlogin);
         Button  uploadBtn=findViewById(R.id.upload);
+        //Button copytext=findViewById(R.id.copytext);
         CaptureImageButton=findViewById(R.id.capture);
 
 
@@ -65,7 +66,17 @@ public class Afterlogin extends AppCompatActivity {
 
             }
         });
-
+        //text copying
+        /*copytext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String CopiedText=mtextView.getText().toString();
+                ClipboardManager clipboardManager=(ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+                ClipData data=ClipData.newPlainText("image Copied",CopiedText);
+                clipboardManager.setPrimaryClip(data);
+                Toast.makeText(getApplicationContext(),"Text Copied",Toast.LENGTH_LONG).show();
+            }
+        });*/
     }
     //sign Out
 
@@ -83,6 +94,11 @@ public class Afterlogin extends AppCompatActivity {
             finish();
             Intent intent =new Intent(getApplicationContext(),MainActivity.class);
             startActivity(intent);
+        }
+        if(item.getItemId()==R.id.uploadBook){
+            Intent intent =new Intent(getApplicationContext(),UploadBook.class);
+            startActivity(intent);
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -119,6 +135,8 @@ public class Afterlogin extends AppCompatActivity {
         Intent browserIntet=new Intent(Intent.ACTION_VIEW, Uri.parse(searchForYoutube()));
         startActivity(browserIntet);
     }
+
+
     //text sercher from Google
     public String  searchFromGoogle(){
         String S=mtextView.getText().toString();
@@ -140,6 +158,7 @@ public class Afterlogin extends AppCompatActivity {
         Intent browserIntet=new Intent(Intent.ACTION_VIEW, Uri.parse(searchFromGoogle()));
         startActivity(browserIntet);
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
